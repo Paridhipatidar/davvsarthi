@@ -1,228 +1,403 @@
-import { useState } from "react";
-import AdminLayout from  "../components/layout/AdminLayout";
-import { Plus, Trash2, Save } from "lucide-react";
+"use client";
+
+import { useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
+import AdminLayout from "@/admin/components/layout/AdminLayout";
+import { Plus, Search, Pencil, Trash2, X } from "lucide-react";
 
 /* ================= TYPES ================= */
 
-type Program = {
-  id: number;
-  group: string;           // B / C / D / E / F
-  name: string;            // Programme name
-  duration: string;        // 3 / 4 / 5 Years
-  cuetSubjects: string;    // Subject mapping
-};
+interface Course {
+  id: string;
+  code: string;
+  name: string;
+  group: string;
+  duration: string;
+  academicYear: string;
+  cuetSubjects: string;
+  remarks?: string;
+  totalSeats: number;
+  filledSeats: number;
+  sortOrder: number;
+}
 
-/* ================= INITIAL DATA (FROM PDF) ================= */
+/* ================= DATA ================= */
 
-const initialPrograms: Program[] = [
-  // ---------- GROUP B ----------
+const initialCourses: Course[] = [
   {
-    id: 1,
-    group: "B",
-    name: "M.B.A. (Management Science)",
-    duration: "5 Years",
-    cuetSubjects: "English, General Aptitude Test",
-  },
-  {
-    id: 2,
-    group: "B",
-    name: "M.B.A. (Tourism)",
-    duration: "5 Years",
-    cuetSubjects: "English, General Aptitude Test",
-  },
-  {
-    id: 3,
-    group: "B",
-    name: "B.Com. (Hons.)",
-    duration: "4 Years",
-    cuetSubjects: "English, General Aptitude Test",
-  },
-
-  // ---------- GROUP C ----------
-  {
-    id: 4,
-    group: "C",
-    name: "M.Tech. (IT) Integrated Dual Degree",
-    duration: "5 Years",
-    cuetSubjects: "English, Physics, Chemistry, Mathematics",
-  },
-  {
-    id: 5,
-    group: "C",
-    name: "M.C.A.",
-    duration: "5 Years",
-    cuetSubjects: "English, Physics, Chemistry, Mathematics",
-  },
-
-  // ---------- GROUP D ----------
-  {
-    id: 6,
+    id: "bca",
+    code: "BCA",
+    name: "Bachelor of Computer Applications",
     group: "D",
-    name: "B.C.A.",
     duration: "3 / 4 Years",
+    academicYear: "2025-26",
     cuetSubjects: "English, Physics, Mathematics",
-  },
-
-  // ---------- GROUP E ----------
-  {
-    id: 7,
-    group: "E",
-    name: "B.Pharm",
-    duration: "4 Years",
-    cuetSubjects: "English, Physics, Chemistry, Mathematics / Biology",
-  },
-
-  // ---------- GROUP F ----------
-  {
-    id: 8,
-    group: "F",
-    name: "M.B.A. (Hospital Administration)",
-    duration: "5 Years",
-    cuetSubjects: "English, Physics, Chemistry, Biology",
+    remarks: "Multiple exit option available",
+    totalSeats: 120,
+    filledSeats: 45,
+    sortOrder: 1,
   },
 ];
 
-/* ================= COMPONENT ================= */
+/* ================= MODAL (PORTAL) ================= */
 
-const Programs = () => {
-  const [programs, setPrograms] = useState<Program[]>(initialPrograms);
+const CourseEditor = ({
+  course,
+  onSave,
+  onClose,
+}: {
+  course: Course;
+  onSave: (course: Course) => void;
+  onClose: () => void;
+}) => {
+  const [form, setForm] = useState<Course>(course);
+  const [mounted, setMounted] = useState(false);
 
-  const updateProgram = (
-    id: number,
-    field: keyof Program,
-    value: string
-  ) => {
-    setPrograms((prev) =>
-      prev.map((p) =>
-        p.id === id ? { ...p, [field]: value } : p
-      )
-    );
-  };
+  useEffect(() => {
+    setMounted(true);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, []);
 
-  const addProgram = () => {
-    setPrograms([
-      ...programs,
-      {
-        id: Date.now(),
-        group: "",
-        name: "",
-        duration: "",
-        cuetSubjects: "",
-      },
-    ]);
-  };
+  const update = (k: keyof Course, v: any) =>
+    setForm({ ...form, [k]: v });
 
-  const removeProgram = (id: number) => {
-    setPrograms(programs.filter((p) => p.id !== id));
-  };
+  if (!mounted) return null;
 
-  const savePrograms = () => {
-    console.log("CUET Program Mapping:", programs);
-    alert("Programs & CUET subject mapping saved successfully!");
-  };
+return createPortal(
+  <div className="fixed inset-0 z-[9999] bg-black/50">
+    {/* wrapper below navbar */}
+    <div className="absolute inset-0 pt-16 flex justify-center">
+      <div className="bg-white w-full max-w-3xl h-[calc(100vh-4rem)] rounded-t-2xl shadow-xl flex flex-col">
 
-  return (
-    <AdminLayout>
-      <div className="space-y-8">
-
-        {/* HEADER */}
-        <div>
-          <h1 className="text-2xl font-bold">Programs & CUET Subject Mapping</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage group-wise programmes and CUET (UG) 2025 subject requirements
-          </p>
+        {/* ================= HEADER ================= */}
+        <div className="flex items-center justify-between px-6 py-4 border-b">
+          <h2 className="text-lg font-bold">Edit Course</h2>
+          <button onClick={onClose}>✕</button>
         </div>
 
-        {/* TABLE */}
-        <div className="bg-card border rounded-xl p-5 overflow-x-auto">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="font-semibold">Programme Configuration</h2>
-            <button
-              onClick={addProgram}
-              className="flex items-center gap-1 text-sm"
-            >
-              <Plus size={16} /> Add Programme
-            </button>
-          </div>
+        {/* ================= BODY ================= */}
+        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-10">
 
-          <table className="w-full text-sm border-collapse border">
-            <thead className="bg-muted">
-              <tr>
-                <th className="border p-2">Group</th>
-                <th className="border p-2">Programme Name</th>
-                <th className="border p-2">Duration</th>
-                <th className="border p-2">CUET (UG) Subjects</th>
-                <th className="border p-2">Action</th>
-              </tr>
-            </thead>
+          {/* BASIC INFORMATION */}
+          <section className="space-y-4">
+            <h3 className="font-semibold text-base">Basic Information</h3>
 
-            <tbody>
-              {programs.map((p) => (
-                <tr key={p.id}>
-                  <td className="border p-2">
-                    <input
-                      value={p.group}
-                      onChange={(e) =>
-                        updateProgram(p.id, "group", e.target.value)
-                      }
-                      className="border p-1 w-12 text-center"
-                    />
-                  </td>
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Course Code
+                </label>
+                <input
+                  className="input"
+                  value={form.code}
+                  onChange={e => update("code", e.target.value)}
+                />
+              </div>
 
-                  <td className="border p-2">
-                    <input
-                      value={p.name}
-                      onChange={(e) =>
-                        updateProgram(p.id, "name", e.target.value)
-                      }
-                      className="border p-1 w-full"
-                    />
-                  </td>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Course Name
+                </label>
+                <input
+                  className="input"
+                  value={form.name}
+                  onChange={e => update("name", e.target.value)}
+                />
+              </div>
 
-                  <td className="border p-2">
-                    <input
-                      value={p.duration}
-                      onChange={(e) =>
-                        updateProgram(p.id, "duration", e.target.value)
-                      }
-                      className="border p-1 w-full"
-                    />
-                  </td>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Group
+                </label>
+                <input
+                  className="input"
+                  value={form.group}
+                  onChange={e => update("group", e.target.value)}
+                />
+              </div>
 
-                  <td className="border p-2">
-                    <input
-                      value={p.cuetSubjects}
-                      onChange={(e) =>
-                        updateProgram(p.id, "cuetSubjects", e.target.value)
-                      }
-                      className="border p-1 w-full"
-                    />
-                  </td>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Duration
+                </label>
+                <input
+                  className="input"
+                  value={form.duration}
+                  onChange={e => update("duration", e.target.value)}
+                />
+              </div>
 
-                  <td className="border p-2 text-center">
+              <div className="col-span-2">
+                <label className="block text-sm font-medium mb-1">
+                  Academic Year
+                </label>
+                <input
+                  className="input"
+                  value={form.academicYear}
+                  onChange={e => update("academicYear", e.target.value)}
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* SEATS */}
+          <section className="space-y-4">
+            <h3 className="font-semibold text-base">Seats</h3>
+
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Total Seats
+                </label>
+                <input
+                  type="number"
+                  className="input"
+                  value={form.totalSeats}
+                  onChange={e => update("totalSeats", +e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Filled Seats
+                </label>
+                <input
+                  type="number"
+                  className="input"
+                  value={form.filledSeats}
+                  onChange={e => update("filledSeats", +e.target.value)}
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* STUDENT VISIBLE CONTENT */}
+          <section className="space-y-4">
+            <h3 className="font-semibold text-base">
+              Student Visible Content
+            </h3>
+
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  CUET Subjects
+                </label>
+                <textarea
+                  className="input h-28 resize-none"
+                  value={form.cuetSubjects}
+                  onChange={e => update("cuetSubjects", e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Remarks
+                </label>
+                <textarea
+                  className="input h-28 resize-none"
+                  value={form.remarks}
+                  onChange={e => update("remarks", e.target.value)}
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* DISPLAY */}
+          <section className="space-y-4">
+            <h3 className="font-semibold text-base">Display</h3>
+
+            <div className="max-w-xs">
+              <label className="block text-sm font-medium mb-1">
+                Sort Order
+              </label>
+              <input
+                type="number"
+                className="input"
+                value={form.sortOrder}
+                onChange={e => update("sortOrder", +e.target.value)}
+              />
+            </div>
+          </section>
+        </div>
+
+        {/* ================= FOOTER ================= */}
+        <div className="border-t px-6 py-4 bg-white">
+          <button
+            onClick={() => onSave(form)}
+            className="w-full rounded-xl bg-blue-600 py-3 text-white font-medium text-base"
+          >
+            Save Course
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>,
+  document.body
+);
+
+};
+
+/* ================= PAGE ================= */
+
+export default function AdminCourses() {
+  const [courses, setCourses] = useState<Course[]>(initialCourses);
+  const [search, setSearch] = useState("");
+  const [editing, setEditing] = useState<Course | null>(null);
+
+  const filteredCourses = useMemo(
+    () =>
+      courses
+        .filter(c =>
+          JSON.stringify(c).toLowerCase().includes(search.toLowerCase())
+        )
+        .sort((a, b) => a.sortOrder - b.sortOrder),
+    [search, courses]
+  );
+
+  return (
+  <AdminLayout>
+    <div className="space-y-6">
+
+      {/* HEADER */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Courses Management</h1>
+
+        <button
+          onClick={() =>
+            setEditing({
+              id: crypto.randomUUID(),
+              code: "",
+              name: "",
+              group: "",
+              duration: "",
+              academicYear: "",
+              cuetSubjects: "",
+              remarks: "",
+              totalSeats: 0,
+              filledSeats: 0,
+              sortOrder: courses.length + 1,
+            })
+          }
+          className="flex items-center gap-2 bg-blue-600 px-4 py-2 rounded-xl text-white"
+        >
+          <Plus size={16} /> Add Course
+        </button>
+      </div>
+
+      {/* SEARCH */}
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+        <input
+          className="w-full rounded-xl border px-10 py-2 text-sm"
+          placeholder="Search anything..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
+      {/* TABLE */}
+      <div className="overflow-x-auto rounded-xl border">
+        <table className="w-full text-sm">
+          <thead className="bg-muted">
+            <tr>
+              <th className="p-3">Order</th>
+              <th className="p-3">Code</th>
+              <th className="p-3">Name</th>
+              <th className="p-3">Group</th>
+              <th className="p-3">Duration</th>
+              <th className="p-3">Academic Year</th>
+              <th className="p-3">Seats</th>
+              <th className="p-3">CUET Subjects</th>
+              <th className="p-3">Remarks</th>
+              <th className="p-3 text-center">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {filteredCourses.map((course) => (
+              <tr key={course.id} className="border-t align-top">
+
+                <td className="p-3 text-center">
+                  {course.sortOrder}
+                </td>
+
+                <td className="p-3 font-semibold">
+                  {course.code}
+                </td>
+
+                <td className="p-3">
+                  {course.name}
+                </td>
+
+                <td className="p-3 text-center">
+                  {course.group}
+                </td>
+
+                <td className="p-3">
+                  {course.duration}
+                </td>
+
+                <td className="p-3">
+                  {course.academicYear}
+                </td>
+
+                <td className="p-3 text-center">
+                  {course.filledSeats}/{course.totalSeats}
+                </td>
+
+                <td className="p-3 max-w-xs">
+                  {course.cuetSubjects}
+                </td>
+
+                <td className="p-3 max-w-xs italic">
+                  {course.remarks}
+                </td>
+
+                <td className="p-3">
+                  <div className="flex justify-center gap-2">
+                    <button onClick={() => setEditing(course)}>
+                      <Pencil size={16} />
+                    </button>
                     <button
-                      onClick={() => removeProgram(p.id)}
-                      className="text-destructive"
+                      className="text-red-500"
+                      onClick={() =>
+                        setCourses((c) =>
+                          c.filter((x) => x.id !== course.id)
+                        )
+                      }
                     >
                       <Trash2 size={16} />
                     </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+                </td>
 
-        {/* SAVE */}
-        <button
-          onClick={savePrograms}
-          className="flex items-center gap-2 px-5 py-2 bg-primary text-primary-foreground rounded-lg"
-        >
-          <Save size={16} /> Save Program Mapping
-        </button>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-    </AdminLayout>
-  );
-};
 
-export default Programs;
+      {/* MODAL */}
+      {editing && (
+        <CourseEditor
+          course={editing}
+          onClose={() => setEditing(null)}
+          onSave={(updated) => {
+            setCourses((c) =>
+              c.some((x) => x.id === updated.id)
+                ? c.map((x) =>
+                    x.id === updated.id ? updated : x
+                  )
+                : [...c, updated]
+            );
+            setEditing(null);
+          }}
+        />
+      )}
+    </div>
+  </AdminLayout>
+);
+}
