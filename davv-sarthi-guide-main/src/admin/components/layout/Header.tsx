@@ -3,14 +3,11 @@ import { LogOut, User } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", path: "/admin/dashboard" },
-  { label: "Programs", path: "/admin/programs" },
-  { label: "Eligibility", path: "/admin/eligibility" },
-  { label: "Seats", path: "/admin/seats" },
-  { label: "Admission", path: "/admin/admission-process" },
-  { label: "Fees", path: "/admin/fees" },
+  { label: "Courses", path: "/admin/programs" },
+  { label: "Admission Overview", path: "/admin/instructions" },
+  { label: "Counselling Updates", path: "/admin/eligibility" },
   { label: "Reservation", path: "/admin/reservation" },
-  { label: "Merit", path: "/admin/merit-rules" },
-  { label: "Instructions", path: "/admin/instructions" },
+  { label: "Fees", path: "/admin/fees" },
   { label: "Cut-offs", path: "/admin/previous-year-cutoffs" },
 ];
 

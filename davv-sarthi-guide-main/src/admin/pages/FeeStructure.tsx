@@ -1,271 +1,346 @@
+"use client";
+
 import { useState } from "react";
-import AdminLayout from  "../components/layout/AdminLayout";
-import { Plus, Trash2, Save } from "lucide-react";
+import AdminLayout from "@/admin/components/layout/AdminLayout";
+import { Plus, Trash2 } from "lucide-react";
 
 /* ================= TYPES ================= */
 
-type ProgramFee = {
-  id: number;
-  group: string;
-  program: string;
-  duration: string;
-  feePerYear: number | string;
+type FeeRow = {
+  course: string;
+  type: "UG" | "PG";
+  tuition: number;
+  development: number;
+  exam: number;
+  other: number;
 };
 
-type StudentServiceFee = {
-  id: number;
-  head: string;
-  oddBoys: number;
-  oddGirls: number;
-  evenBoys: number;
-  evenGirls: number;
+type Scholarship = {
+  name: string;
+  eligibility: string;
+  benefit: string;
 };
 
-/* ================= INITIAL DATA ================= */
+type Contact = {
+  label: string;
+  type: "email" | "phone";
+  value: string;
+};
 
-const initialProgramFees: ProgramFee[] = [
-  { id: 1, group: "B", program: "MBA (E-Commerce)", duration: "5 Years", feePerYear: 69636 },
-  { id: 2, group: "B", program: "B.Com (Hons.)", duration: "4 Years", feePerYear: 56100 },
-  { id: 3, group: "C", program: "MCA", duration: "5 Years", feePerYear: 89100 },
-];
+/* ================= PAGE ================= */
 
-const initialStudentServiceFees: StudentServiceFee[] = [
-  {
-    id: 1,
-    head: "University Tuition Fee",
-    oddBoys: 220,
-    oddGirls: 0,
-    evenBoys: 220,
-    evenGirls: 0,
-  },
-  {
-    id: 2,
-    head: "Health Centre",
-    oddBoys: 200,
-    oddGirls: 200,
-    evenBoys: 200,
-    evenGirls: 200,
-  },
-];
+export default function AdminFees() {
+  /* HEADER */
+  const [title, setTitle] = useState("Fee Structure & Scholarship Details");
+  const [subtitle, setSubtitle] = useState(
+    "Complete breakdown of course fees along with scholarships and flexible payment options."
+  );
 
-/* ================= COMPONENT ================= */
+  /* FEES */
+  const [fees, setFees] = useState<FeeRow[]>([
+    {
+      course: "BCA",
+      type: "UG",
+      tuition: 45000,
+      development: 10000,
+      exam: 4000,
+      other: 3000,
+    },
+  ]);
 
-const FeeStructure = () => {
-  const [programFees, setProgramFees] = useState(initialProgramFees);
-  const [studentFees, setStudentFees] = useState(initialStudentServiceFees);
+  const [feeNote, setFeeNote] = useState(
+    "Fees are subject to revision. Hostel & mess charges are additional. One-time admission fee of ₹5,000 applicable."
+  );
 
-  const [otherFees, setOtherFees] = useState({
-    cautionMoney: 4000,
-    examFee: 5500,
-    lawExamFee: 5750,
-    alumniFee: 500,
-    nriFeeUSD: 3500,
-  });
+  /* SCHOLARSHIPS */
+  const [scholarships, setScholarships] = useState<Scholarship[]>([
+    {
+      name: "Merit Scholarship",
+      eligibility: "90% and above in qualifying exam",
+      benefit: "100% tuition fee waiver",
+    },
+  ]);
 
-  /* ---------- HANDLERS ---------- */
+  /* PAYMENT MODES */
+  const [paymentModes, setPaymentModes] = useState<string[]>([
+    "Online Payment (Net Banking, Credit/Debit Card, UPI)",
+  ]);
 
-  const updateProgramFee = (id: number, field: keyof ProgramFee, value: string) => {
-    setProgramFees((prev) =>
-      prev.map((row) => (row.id === id ? { ...row, [field]: value } : row))
-    );
-  };
+  /* CONTACT */
+  const [contacts, setContacts] = useState<Contact[]>([
+    { label: "Accounts Email", type: "email", value: "accounts@davv.ac.in" },
+  ]);
 
-  const updateStudentFee = (
-    id: number,
-    field: keyof StudentServiceFee,
-    value: number
-  ) => {
-    setStudentFees((prev) =>
-      prev.map((row) => (row.id === id ? { ...row, [field]: value } : row))
-    );
-  };
-
-  const addProgramFee = () => {
-    setProgramFees([
-      ...programFees,
-      {
-        id: Date.now(),
-        group: "",
-        program: "",
-        duration: "",
-        feePerYear: "",
-      },
-    ]);
-  };
-
-  const removeProgramFee = (id: number) => {
-    setProgramFees(programFees.filter((row) => row.id !== id));
-  };
-
-  const addStudentFee = () => {
-    setStudentFees([
-      ...studentFees,
-      {
-        id: Date.now(),
-        head: "",
-        oddBoys: 0,
-        oddGirls: 0,
-        evenBoys: 0,
-        evenGirls: 0,
-      },
-    ]);
-  };
-
-  const removeStudentFee = (id: number) => {
-    setStudentFees(studentFees.filter((row) => row.id !== id));
-  };
-
-  const saveAll = () => {
-    console.log({
-      programFees,
-      studentFees,
-      otherFees,
-    });
-    alert("Fee Structure saved successfully!");
-  };
+  const [officeHours, setOfficeHours] = useState(
+    "Mon–Fri, 10:00 AM – 5:00 PM"
+  );
 
   return (
     <AdminLayout>
-      <div className="space-y-10">
+      <div className="max-w-6xl mx-auto space-y-20">
 
-        {/* HEADER */}
-        <div>
-          <h1 className="text-2xl font-bold">Fee Structure</h1>
-          <p className="text-sm text-muted-foreground">
-            Admin-editable fee configuration (as per CUET-UG brochure)
-          </p>
-        </div>
+        {/* ================= PAGE HEADER ================= */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-bold">Page Header</h2>
 
-        {/* ================= PROGRAM FEES ================= */}
-        <section className="bg-card border rounded-xl p-5 space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="font-semibold">Programme-wise Fees</h2>
-            <button onClick={addProgramFee} className="flex gap-1 text-sm">
-              <Plus size={16} /> Add Program
-            </button>
+          <div className="space-y-1 max-w-3xl">
+            <label className="text-sm font-medium">Page Title</label>
+            <input
+              className="w-full rounded-lg border px-3 py-2 text-sm"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+            />
           </div>
 
-          <table className="w-full text-sm border">
-            <thead className="bg-muted">
-              <tr>
-                <th className="border p-2">Group</th>
-                <th className="border p-2">Program</th>
-                <th className="border p-2">Duration</th>
-                <th className="border p-2">Fee / Year</th>
-                <th className="border p-2">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {programFees.map((row) => (
-                <tr key={row.id}>
-                  <td className="border p-2">
-                    <input value={row.group}
-                      onChange={(e) => updateProgramFee(row.id, "group", e.target.value)}
-                      className="border p-1 w-full" />
-                  </td>
-                  <td className="border p-2">
-                    <input value={row.program}
-                      onChange={(e) => updateProgramFee(row.id, "program", e.target.value)}
-                      className="border p-1 w-full" />
-                  </td>
-                  <td className="border p-2">
-                    <input value={row.duration}
-                      onChange={(e) => updateProgramFee(row.id, "duration", e.target.value)}
-                      className="border p-1 w-full" />
-                  </td>
-                  <td className="border p-2">
-                    <input value={row.feePerYear}
-                      onChange={(e) => updateProgramFee(row.id, "feePerYear", e.target.value)}
-                      className="border p-1 w-full" />
-                  </td>
-                  <td className="border p-2 text-center">
-                    <button onClick={() => removeProgramFee(row.id)}>
-                      <Trash2 size={16} className="text-destructive" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-
-        {/* ================= STUDENT SERVICE FEES ================= */}
-        <section className="bg-card border rounded-xl p-5 space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="font-semibold">Student Service Fees</h2>
-            <button onClick={addStudentFee} className="flex gap-1 text-sm">
-              <Plus size={16} /> Add Fee Head
-            </button>
+          <div className="space-y-1 max-w-3xl">
+            <label className="text-sm font-medium">Page Description</label>
+            <textarea
+              className="w-full rounded-lg border px-3 py-2 text-sm h-20"
+              value={subtitle}
+              onChange={e => setSubtitle(e.target.value)}
+            />
           </div>
-
-          <table className="w-full text-sm border">
-            <thead className="bg-muted">
-              <tr>
-                <th className="border p-2">Head</th>
-                <th className="border p-2">Odd Boys</th>
-                <th className="border p-2">Odd Girls</th>
-                <th className="border p-2">Even Boys</th>
-                <th className="border p-2">Even Girls</th>
-                <th className="border p-2">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {studentFees.map((row) => (
-                <tr key={row.id}>
-                  <td className="border p-2">
-                    <input value={row.head}
-                      onChange={(e) => updateStudentFee(row.id, "head", e.target.value as any)}
-                      className="border p-1 w-full" />
-                  </td>
-                  {(["oddBoys", "oddGirls", "evenBoys", "evenGirls"] as const).map((field) => (
-                    <td key={field} className="border p-2">
-                      <input type="number" value={row[field]}
-                        onChange={(e) => updateStudentFee(row.id, field, Number(e.target.value))}
-                        className="border p-1 w-full" />
-                    </td>
-                  ))}
-                  <td className="border p-2 text-center">
-                    <button onClick={() => removeStudentFee(row.id)}>
-                      <Trash2 size={16} className="text-destructive" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </section>
 
-        {/* ================= OTHER FEES ================= */}
-        <section className="bg-card border rounded-xl p-5 space-y-3">
-          <h2 className="font-semibold">Other Mandatory Fees</h2>
+        {/* ================= FEE STRUCTURE ================= */}
+        <section className="space-y-6">
+          <h2 className="text-xl font-bold">Course-wise Fee Structure</h2>
 
-          {Object.entries(otherFees).map(([key, value]) => (
-            <div key={key} className="flex gap-4 items-center">
-              <label className="w-64 capitalize">
-                {key.replace(/([A-Z])/g, " $1")}
-              </label>
-              <input
-                type="number"
-                value={value}
-                onChange={(e) =>
-                  setOtherFees({ ...otherFees, [key]: Number(e.target.value) })
-                }
-                className="border p-2 w-40"
-              />
+          {fees.map((f, i) => (
+            <div key={i} className="border rounded-xl p-5 space-y-4">
+
+              <div className="grid grid-cols-6 gap-4">
+                <div className="col-span-2 space-y-1">
+                  <label className="text-xs font-medium">Course Name</label>
+                  <input
+                    className="w-full border rounded px-2 py-1"
+                    value={f.course}
+                    onChange={e => {
+                      const x=[...fees]; x[i].course=e.target.value; setFees(x);
+                    }}
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-medium">Program Type</label>
+                  <select
+                    className="w-full border rounded px-2 py-1"
+                    value={f.type}
+                    onChange={e => {
+                      const x=[...fees]; x[i].type=e.target.value as any; setFees(x);
+                    }}
+                  >
+                    <option value="UG">UG</option>
+                    <option value="PG">PG</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-medium">Tuition Fee</label>
+                  <input type="number" className="w-full border rounded px-2 py-1"
+                    value={f.tuition}
+                    onChange={e=>{
+                      const x=[...fees]; x[i].tuition=+e.target.value; setFees(x);
+                    }} />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-medium">Development Fee</label>
+                  <input type="number" className="w-full border rounded px-2 py-1"
+                    value={f.development}
+                    onChange={e=>{
+                      const x=[...fees]; x[i].development=+e.target.value; setFees(x);
+                    }} />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-medium">Exam Fee</label>
+                  <input type="number" className="w-full border rounded px-2 py-1"
+                    value={f.exam}
+                    onChange={e=>{
+                      const x=[...fees]; x[i].exam=+e.target.value; setFees(x);
+                    }} />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-medium">Other Charges</label>
+                  <input type="number" className="w-full border rounded px-2 py-1"
+                    value={f.other}
+                    onChange={e=>{
+                      const x=[...fees]; x[i].other=+e.target.value; setFees(x);
+                    }} />
+                </div>
+              </div>
+
+              <button
+                className="text-red-500 text-sm flex items-center gap-1"
+                onClick={()=>setFees(fees.filter((_,idx)=>idx!==i))}
+              >
+                <Trash2 size={14}/> Remove Course
+              </button>
             </div>
           ))}
+
+          <button
+            onClick={()=>setFees([...fees,{
+              course:"",
+              type:"UG",
+              tuition:0,
+              development:0,
+              exam:0,
+              other:0
+            }])}
+            className="bg-blue-600 text-white px-4 py-2 rounded-xl"
+          >
+            + Add Course Fee
+          </button>
+
+          <div className="space-y-1">
+            <label className="text-sm font-medium">Fee Note (Shown below table)</label>
+            <textarea
+              className="w-full border rounded-lg px-3 py-2 h-16"
+              value={feeNote}
+              onChange={e=>setFeeNote(e.target.value)}
+            />
+          </div>
         </section>
 
-        {/* SAVE */}
-        <button
-          onClick={saveAll}
-          className="flex items-center gap-2 px-5 py-2 bg-primary text-primary-foreground rounded-lg"
-        >
-          <Save size={16} /> Save Fee Structure
-        </button>
+        {/* ================= SCHOLARSHIPS ================= */}
+        <section className="space-y-6">
+          <h2 className="text-xl font-bold">Scholarships</h2>
+
+          {scholarships.map((s,i)=>(
+            <div key={i} className="border rounded-xl p-5 space-y-3">
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Scholarship Name</label>
+                <input className="w-full border rounded px-3 py-2"
+                  value={s.name}
+                  onChange={e=>{
+                    const x=[...scholarships]; x[i].name=e.target.value; setScholarships(x);
+                  }} />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Eligibility</label>
+                <input className="w-full border rounded px-3 py-2"
+                  value={s.eligibility}
+                  onChange={e=>{
+                    const x=[...scholarships]; x[i].eligibility=e.target.value; setScholarships(x);
+                  }} />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Benefit</label>
+                <input className="w-full border rounded px-3 py-2"
+                  value={s.benefit}
+                  onChange={e=>{
+                    const x=[...scholarships]; x[i].benefit=e.target.value; setScholarships(x);
+                  }} />
+              </div>
+
+              <button className="text-red-500 text-sm"
+                onClick={()=>setScholarships(scholarships.filter((_,idx)=>idx!==i))}>
+                <Trash2 size={14}/> Remove Scholarship
+              </button>
+            </div>
+          ))}
+
+          <button
+            onClick={()=>setScholarships([...scholarships,{name:"",eligibility:"",benefit:""}])}
+            className="bg-blue-600 text-white px-4 py-2 rounded-xl"
+          >
+            + Add Scholarship
+          </button>
+        </section>
+
+        {/* ================= PAYMENT MODES ================= */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-bold">Payment Modes</h2>
+
+          {paymentModes.map((p,i)=>(
+            <div key={i} className="space-y-1">
+              <label className="text-sm font-medium">Payment Option {i+1}</label>
+              <div className="flex gap-2">
+                <input className="flex-1 border rounded px-3 py-2"
+                  value={p}
+                  onChange={e=>{
+                    const x=[...paymentModes]; x[i]=e.target.value; setPaymentModes(x);
+                  }} />
+                <button
+                  className="text-red-500"
+                  onClick={()=>setPaymentModes(paymentModes.filter((_,idx)=>idx!==i))}
+                >
+                  <Trash2/>
+                </button>
+              </div>
+            </div>
+          ))}
+
+          <button
+            onClick={()=>setPaymentModes([...paymentModes,""])}
+            className="bg-blue-600 text-white px-4 py-2 rounded-xl"
+          >
+            + Add Payment Mode
+          </button>
+        </section>
+
+        {/* ================= CONTACT INFO ================= */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-bold">Contact Information</h2>
+
+          {contacts.map((c,i)=>(
+            <div key={i} className="grid grid-cols-3 gap-3 items-end">
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Label</label>
+                <input className="border rounded px-2 py-1 w-full"
+                  value={c.label}
+                  onChange={e=>{
+                    const x=[...contacts]; x[i].label=e.target.value; setContacts(x);
+                  }} />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Type</label>
+                <select className="border rounded px-2 py-1 w-full"
+                  value={c.type}
+                  onChange={e=>{
+                    const x=[...contacts]; x[i].type=e.target.value as any; setContacts(x);
+                  }}>
+                  <option value="email">Email</option>
+                  <option value="phone">Phone</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Value</label>
+                <input className="border rounded px-2 py-1 w-full"
+                  value={c.value}
+                  onChange={e=>{
+                    const x=[...contacts]; x[i].value=e.target.value; setContacts(x);
+                  }} />
+              </div>
+            </div>
+          ))}
+
+          <button
+            onClick={()=>setContacts([...contacts,{label:"",type:"email",value:""}])}
+            className="bg-blue-600 text-white px-4 py-2 rounded-xl"
+          >
+            + Add Contact
+          </button>
+        </section>
+
+        {/* ================= OFFICE HOURS ================= */}
+        <section className="space-y-3">
+          <h2 className="text-xl font-bold">Office Hours</h2>
+          <input
+            className="w-full border rounded px-3 py-2"
+            value={officeHours}
+            onChange={e=>setOfficeHours(e.target.value)}
+          />
+        </section>
+
       </div>
     </AdminLayout>
   );
-};
-
-export default FeeStructure;
+}
